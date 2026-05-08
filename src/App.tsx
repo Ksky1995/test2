@@ -3,48 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Compass, 
-  Target, 
   ShieldCheck, 
   MapPin, 
-  Package, 
-  Monitor, 
   ArrowRight, 
-  Plus,
   Menu, 
   X, 
   Phone, 
   Mail, 
-  Linkedin, 
-  Facebook, 
-  Youtube,
-  Layers,
-  Thermometer,
-  Hammer,
-  Scan,
-  CheckCircle2,
-  Zap,
-  Shield,
-  Award,
-  FileText,
   RefreshCw,
-  Download,
-  Eye,
-  Info,
-  ChevronRight,
-  Microscope,
   Cpu,
   Home,
-  Settings,
-  ArrowLeft
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -54,24 +31,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { 
   Dialog, 
   DialogClose,
   DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+
+// --- Types ---
+type TabType = 'home' | 'services' | 'solutions' | 'contact';
+
+interface ThemeConfig {
+  primary: string;
+  accent: string;
+  bgFrom: string;
+  bgTo: string;
+  background: string;
+  glow: string;
+}
 
 // --- Utility Functions ---
 const scrollToId = (id: string) => {
@@ -81,7 +59,7 @@ const scrollToId = (id: string) => {
   }
 };
 
-const TAB_THEMES: Record<string, { primary: string; accent: string; bgFrom: string; bgTo: string; background: string; glow: string }> = {
+const TAB_THEMES: Record<TabType, ThemeConfig> = {
   home: { 
     primary: '217 91% 60%', 
     accent: '217 91% 65%',
@@ -117,6 +95,31 @@ const TAB_THEMES: Record<string, { primary: string; accent: string; bgFrom: stri
 };
 
 // --- Components ---
+
+const AnimatedPulse = ({ path, duration = 3 }: { path: string, duration?: number, key?: React.Key }) => (
+  <g>
+    <path d={path} stroke="var(--color-primary)" strokeWidth="0.5" fill="none" strokeOpacity="0.05" />
+    <motion.path
+      d={path}
+      stroke="var(--color-primary)"
+      strokeWidth="1.5"
+      fill="none"
+      filter="url(#circuit-glow-strong)"
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={{ 
+        pathLength: [0, 0.3, 0.3, 0],
+        pathOffset: [0, 0, 0.7, 1],
+        opacity: [0, 1, 1, 0]
+      }}
+      transition={{
+        duration: duration + Math.random() * 2,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: Math.random() * 5
+      }}
+    />
+  </g>
+);
 
 const CircuitBackground = () => {
   return (
@@ -182,32 +185,7 @@ const CircuitBackground = () => {
   );
 };
 
-const AnimatedPulse = ({ path, duration = 3, ...props }: { path: string, duration?: number, key?: any }) => (
-  <g key={props.key}>
-    <path d={path} stroke="var(--color-primary)" strokeWidth="0.5" fill="none" strokeOpacity="0.05" />
-    <motion.path
-      d={path}
-      stroke="var(--color-primary)"
-      strokeWidth="1.5"
-      fill="none"
-      filter="url(#circuit-glow-strong)"
-      initial={{ pathLength: 0, opacity: 0 }}
-      animate={{ 
-        pathLength: [0, 0.3, 0.3, 0],
-        pathOffset: [0, 0, 0.7, 1],
-        opacity: [0, 1, 1, 0]
-      }}
-      transition={{
-        duration: duration + Math.random() * 2,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay: Math.random() * 5
-      }}
-    />
-  </g>
-);
-
-const Navbar = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
+const Navbar = ({ setActiveTab }: { setActiveTab: (tab: TabType) => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTransmitting, setIsTransmitting] = useState(false);
@@ -227,7 +205,7 @@ const Navbar = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
     }, 400);
   };
 
-  const navLinks = [
+  const navLinks: { name: string; href: TabType }[] = [
     { name: 'Services & Calibration', href: 'services' },
     { name: 'Technical Solutions', href: 'solutions' },
     { name: 'Request Service', href: 'contact' },
@@ -543,81 +521,6 @@ const TechnicalMatrix = ({ isMobile = false, onContactClick }: { isMobile?: bool
   );
 };
 
-const EquipmentBento = ({ isMobile = false, onContactClick }: { isMobile?: boolean, onContactClick?: () => void }) => {
-    const [openDialogIndex, setOpenDialogIndex] = useState<number | null>(null);
-    const items = [
-        { name: 'TOTAL STATIONS', img: 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&q=80&w=1200', cols: 'md:col-span-2', desc: 'High-precision angular and distance measurement units for infrastructure development.', specs: 'ACCURACY: 0.5" - 2"', features: ['Laser plummet', 'Dual-axis compensation', 'Reflectorless EDM up to 1000m', 'Auto-Correction', '8K Data Log'] },
-        { name: 'AUTO LEVELS', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800', cols: 'md:col-span-1', desc: 'Automatic and digital levelling for site preparation and precise height transfer.', specs: '±0.3mm to 1.5mm', features: ['Air-damped compensator', 'Waterproof IPX6', '32x Magnification', 'Precision Circle'] },
-        { name: 'COMPRESSION UNITS', img: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1200', cols: 'md:col-span-3', desc: 'High-power testing systems. We provide deep-level technical recovery, reviving failed control boards with custom MCU solutions and DC motor controllers.', specs: 'CAPACITY UP TO 3000kN', features: ['Automatic pace control', 'MCU-based revival', 'DC Motor Controlling', 'Heavy Duty Frame'] },
-    ];
-
-    return (
-        <section id="equipment" className="py-12 bg-transparent relative border-y border-primary/5">
-            <div className="container">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-8">
-                    <div className="text-left">
-                        <div className="hud-overline inline-flex text-primary/80">INVENTORY SUPPORT</div>
-                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase glow-flicker">
-                            <span className="text-foreground">SYSTEM</span> <br/><span className="video-text animate-shimmer">PLATFORMS</span>
-                        </h2>
-                    </div>
-                    <p className="text-muted-foreground font-medium max-w-sm text-right">Official servicing for premium geotechnical and mechanical assets. Click to inspect specifications.</p>
-                </div>
-                <div className="grid md:grid-cols-3 gap-4">
-                    <div className="anamorphic-flare -top-20 right-0 opacity-30 h-[2px] w-1/2 rotate-1" />
-                    {items.map((item, i) => (
-                        <div key={item.name} className={item.cols}>
-                          <Dialog open={openDialogIndex === i} onOpenChange={(open) => { if (!open) setOpenDialogIndex(null); }}>
-                            <DialogTrigger asChild onClick={() => setOpenDialogIndex(i)}>
-                              <button className="relative group aspect-video md:aspect-[16/6] overflow-hidden border border-primary/30 rounded-sm cursor-pointer block w-full p-0 text-left bg-transparent shadow-lg shadow-primary/5 transition-all hover:border-primary/50">
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="w-full h-full relative">
-                                  <img src={item.img} alt={item.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" referrerPolicy="no-referrer" />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent flex flex-col justify-end p-6 md:p-10">
-                                      <div className="flex justify-between items-end gap-4">
-                                          <div className="max-w-md text-left uppercase">
-                                              <Badge variant="outline" className="mb-3 text-[8px] border-primary/40 text-primary font-mono bg-background/50 backdrop-blur-sm">{item.specs}</Badge>
-                                              <h3 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-none mb-3">{item.name}</h3>
-                                              <p className="text-xs text-muted-foreground normal-case font-medium max-w-sm line-clamp-2 transition-all duration-500">{item.desc}</p>
-                                          </div>
-                                          <div className="hud-corner bottom-0 right-0 p-4 bg-primary text-primary-foreground scale-0 group-hover:scale-100 transition-transform shadow-lg shadow-primary/20"><PlusIcon size={20} /></div>
-                                      </div>
-                                  </div>
-                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
-                                </motion.div>
-                              </button>
-                            </DialogTrigger>
-                          <DialogContent className="sm:max-w-[700px] bg-background border-primary/10 p-0 overflow-hidden text-foreground [&>button]:hidden">
-                             <div className="grid md:grid-cols-2 gap-0">
-                                <div className="h-64 md:h-full"><img src={item.img} className="w-full h-full object-cover" alt={item.name} /></div>
-                                <div className="p-10 flex flex-col">
-                                   <Badge className="w-fit mb-4">{item.specs}</Badge>
-                                   <h2 className="text-4xl font-black mb-4 tracking-tighter uppercase leading-none">{item.name}</h2>
-                                   <p className="text-muted-foreground mb-8 text-sm leading-relaxed">{item.desc}</p>
-                                   <div className="space-y-4 mb-10">
-                                      <h4 className="text-[10px] font-mono font-black text-primary uppercase tracking-widest">Core Capabilities</h4>
-                                      <ul className="space-y-2">{item.features.map(f => (<li key={f} className="text-xs font-semibold flex items-center gap-2"><CheckCircle2 size={12} className="text-primary" /> {f}</li>))}</ul>
-                                   </div>
-                                   <DialogClose asChild>
-                                     <Button className="mt-auto w-full h-14 uppercase font-black tracking-widest text-[10px]" onClick={() => { if (onContactClick) onContactClick(); scrollToId('contact'); setOpenDialogIndex(null); }}>SERVICE REQUEST</Button>
-                                   </DialogClose>
-                                </div>
-                             </div>
-                          </DialogContent>
-                        </Dialog>
-                    </div>
-                ))}
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const PlusIcon = ({ size }: { size: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-);
-
 // ✅ EMAILJS INTEGRATED CONTACT FORM
 const ContactMinimal = ({ isMobile = false }: { isMobile?: boolean }) => {
   const [status, setStatus] = useState<'idle' | 'transmitting' | 'complete'>('idle');
@@ -893,7 +796,7 @@ const CompactFooter = () => (
 );
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState<TabType>('home');
   const [showLetterbox, setShowLetterbox] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -906,10 +809,9 @@ export default function App() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: TabType) => {
     if (tab === activeTab) return;
     setTimeout(() => { setActiveTab(tab); setTimeout(() => scrollToId(tab), 50); }, 200);
-    // Short lockout for physical smoothness
   };
 
   useEffect(() => {
@@ -918,38 +820,32 @@ export default function App() {
   }, []);
 
   const renderContent = () => {
-    const content = (() => {
-      switch (activeTab) {
-        case 'home':
-          return (<div className="min-h-full" id="home"><Hero onRequestService={() => handleTabChange('contact')} onTechnicalSolutions={() => handleTabChange('services')} /></div>);
-        case 'services':
-          return <TechnicalMatrix onContactClick={() => handleTabChange('contact')} />;
-        case 'solutions':
-          return <TechnicalSolutions onContactClick={() => handleTabChange('contact')} />;
-        case 'contact':
-          return <ContactMinimal isMobile={isMobile} />;
-        default:
-          return <Hero onTechnicalSolutions={() => handleTabChange('services')} />;
-      }
-    })();
-
-    return (
-      <motion.div 
-        key={activeTab} 
-        initial={{ opacity: 0, filter: "blur(8px)" }} 
-        animate={{ opacity: 1, filter: "blur(0px)" }} 
-        exit={{ opacity: 0, filter: "blur(8px)" }} 
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        {content}
-      </motion.div>
-    );
+    switch (activeTab) {
+      case 'home':
+        return (<div className="min-h-full" id="home"><Hero isMobile={isMobile} onRequestService={() => handleTabChange('contact')} onTechnicalSolutions={() => handleTabChange('services')} /></div>);
+      case 'services':
+        return <TechnicalMatrix isMobile={isMobile} onContactClick={() => handleTabChange('contact')} />;
+      case 'solutions':
+        return <TechnicalSolutions isMobile={isMobile} onContactClick={() => handleTabChange('contact')} />;
+      case 'contact':
+        return <ContactMinimal isMobile={isMobile} />;
+      default:
+        return <Hero isMobile={isMobile} onTechnicalSolutions={() => handleTabChange('services')} />;
+    }
   };
 
   return (
     <motion.div 
       className="min-h-screen w-screen bg-background selection:bg-primary selection:text-primary-foreground font-sans relative"
-      animate={{ '--primary': currentTheme.primary, '--accent': currentTheme.accent, '--ring': currentTheme.primary, '--background': currentTheme.background, '--theme-glow': currentTheme.glow, '--bg-from': currentTheme.bgFrom, '--bg-to': currentTheme.bgTo } as any}
+      animate={{ 
+        '--primary': currentTheme.primary, 
+        '--accent': currentTheme.accent, 
+        '--ring': currentTheme.primary, 
+        '--background': currentTheme.background, 
+        '--theme-glow': currentTheme.glow, 
+        '--bg-from': currentTheme.bgFrom, 
+        '--bg-to': currentTheme.bgTo 
+      } as any}
       transition={{ duration: 1.2, ease: "easeInOut" }}
     >
       <AnimatePresence>
@@ -976,14 +872,15 @@ export default function App() {
 
       <main className="min-h-screen pt-24 lg:pt-20 pb-16 lg:pb-0 relative overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: "easeInOut", delay: 0.1 }} className="w-full">
-            <div className="hidden lg:block w-full">{renderContent()}</div>
-            <div className="lg:hidden w-full">
-              {activeTab === 'home' && (<div className="min-h-full" id="home"><Hero isMobile onRequestService={() => handleTabChange('contact')} onTechnicalSolutions={() => handleTabChange('services')} /></div>)}
-              {activeTab === 'services' && <TechnicalMatrix isMobile onContactClick={() => handleTabChange('contact')} />}
-              {activeTab === 'solutions' && <TechnicalSolutions isMobile onContactClick={() => handleTabChange('contact')} />}
-              {activeTab === 'contact' && <ContactMinimal isMobile />}
-            </div>
+          <motion.div 
+            key={activeTab} 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            transition={{ duration: 0.4, ease: "easeInOut", delay: 0.1 }} 
+            className="w-full"
+          >
+            {renderContent()}
           </motion.div>
         </AnimatePresence>
       </main>
