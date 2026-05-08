@@ -50,7 +50,7 @@ The site uses a **tab-based** navigation system (not React Router). The active t
 ## Business Information
 - **Company:** Myanmar Precision Systems
 - **Location:** North Dagon Township, Yangon, Myanmar
-- **Phone:** +959 428 014 092
+- **Phone:** +959 428 014 092, +959 758 653 198
 - **WhatsApp:** https://wa.me/959428014092
 - **Services:** Survey instrument calibration, soil testing, concrete testing, GPS/GNSS, embedded systems/MCU recovery
 - **Brands serviced:** Leica, Topcon, Sokkia, Trimble, Nikon

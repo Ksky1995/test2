@@ -207,66 +207,6 @@ const AnimatedPulse = ({ path, duration = 3, ...props }: { path: string, duratio
   </g>
 );
 
-const VideoTransition = ({ isVisible }: { isVisible: boolean }) => {
-  const microTraces = useMemo(() => {
-    return Array.from({ length: 60 }).map((_, i) => {
-      const startX = Math.random() * 250; 
-      const startY = Math.random() * 250;
-      const targetX = Math.random() * 1440;
-      const targetY = Math.random() * 900;
-      const dist = Math.sqrt(targetX ** 2 + targetY ** 2);
-      const midX = startX + (targetX - startX) * (0.2 + Math.random() * 0.6);
-      const d = `M ${startX},${startY} H ${midX} V ${targetY} H ${targetX}`;
-      return { id: i, d, delay: dist * 0.35, targetX, targetY };
-    });
-  }, []);
-
-  return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div 
-          key="radiating-orange-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="fixed inset-0 z-[10000] pointer-events-none bg-[rgba(5,8,12,0.94)] backdrop-blur-md gpu-layer"
-        >
-          <div className="absolute inset-0 noise opacity-10" />
-          <div className="absolute inset-0 vignette" style={{ background: 'radial-gradient(circle at 10% 10%, transparent 10%, rgba(0,0,0,0.8) 100%)' }} />
-          <svg className="w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <filter id="bloom-filter" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2.5" result="blur1" />
-                <feGaussianBlur stdDeviation="6" result="blur2" />
-                <feMerge>
-                  <feMergeNode in="blur2" />
-                  <feMergeNode in="blur1" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <g stroke="#0a2a24" strokeWidth="0.8" fill="none" opacity="0.3">
-              {microTraces.map((trace) => (
-                <path key={`base-${trace.id}`} d={trace.d} />
-              ))}
-            </g>
-            <g filter="url(#bloom-filter)">
-              {microTraces.map((trace) => (
-                <g key={`spark-group-${trace.id}`}>
-                  <path d={trace.d} stroke="#ff6a00" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="15 1000" pathLength="100" style={{ animationDelay: `${trace.delay}ms` }} className="spark-animation-orange opacity-60" />
-                  <path d={trace.d} stroke="#ffffff" strokeWidth="0.8" fill="none" strokeLinecap="round" strokeDasharray="15 1000" pathLength="100" style={{ animationDelay: `${trace.delay}ms` }} className="spark-animation-orange" />
-                  <circle cx={trace.targetX} cy={trace.targetY} r="2.5" fill="#ff9d00" style={{ animationDelay: `${trace.delay + 400}ms`, opacity: 0 }} className="pad-animation" />
-                </g>
-              ))}
-            </g>
-          </svg>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-
 const Navbar = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -284,7 +224,7 @@ const Navbar = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
       setIsTransmitting(false);
       setActiveTab('contact');
       scrollToId('contact');
-    }, 800);
+    }, 400);
   };
 
   const navLinks = [
@@ -333,7 +273,8 @@ const Navbar = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
           </ul>
           <div className="flex items-center gap-8 border-l border-white/10 pl-8">
             <div className="flex flex-col items-end">
-              <span className="text-xs font-mono text-white tracking-tight">+959 428 014 092</span>
+              <span className="text-[10px] font-mono text-white tracking-tight">+959 428 014 092</span>
+              <span className="text-[10px] font-mono text-white tracking-tight">+959 758 653 198</span>
             </div>
             <Button size="sm" className="relative overflow-hidden font-ui uppercase font-black tracking-widest text-[10px] h-10 px-6 rounded-none bg-primary hover:bg-primary-hover shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all group" disabled={isTransmitting} onClick={handleRequest}>
               <AnimatePresence mode="wait">
@@ -712,6 +653,21 @@ const ContactMinimal = ({ isMobile = false }: { isMobile?: boolean }) => {
                   <div>
                     <h4 className="text-xs font-mono font-black uppercase tracking-[0.3em] text-primary mb-2">Service Hub</h4>
                     <p className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold text-foreground leading-relaxed`}>North Dagon Township, Yangon, Myanmar</p>
+                    <a 
+                      href="https://maps.app.goo.gl/AaqiFLavrhunhcWz9" 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="mt-4 inline-flex items-center gap-3 px-6 py-4 bg-[#4285F4] text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all w-fit"
+                    >
+                      <MapPin size={16} />View on Google Maps
+                    </a>
+                  </div>
+               </div>
+               <div className="flex items-start gap-6 border-l-2 border-primary pl-10">
+                  <div>
+                    <h4 className="text-xs font-mono font-black uppercase tracking-[0.3em] text-primary mb-2">Hotline Support</h4>
+                    <p className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold text-foreground leading-tight`}>+959 428 014 092</p>
+                    <p className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold text-foreground leading-tight`}>+959 758 653 198</p>
                   </div>
                </div>
                <div className="pl-10 flex flex-wrap gap-4">
@@ -938,7 +894,6 @@ const CompactFooter = () => (
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [showLetterbox, setShowLetterbox] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -952,10 +907,9 @@ export default function App() {
   }, []);
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab || isTransitioning) return;
-    setIsTransitioning(true);
-    setTimeout(() => { setActiveTab(tab); setTimeout(() => scrollToId(tab), 50); }, 800);
-    setTimeout(() => { setIsTransitioning(false); }, 1300); 
+    if (tab === activeTab) return;
+    setTimeout(() => { setActiveTab(tab); setTimeout(() => scrollToId(tab), 50); }, 200);
+    // Short lockout for physical smoothness
   };
 
   useEffect(() => {
@@ -980,7 +934,13 @@ export default function App() {
     })();
 
     return (
-      <motion.div key={activeTab} initial={{ opacity: 0, x: 20 }} animate={{ opacity: [0, 1, 0.8, 1], x: 0, filter: ["blur(10px)", "blur(0px)"] }} transition={{ duration: 0.5, ease: "easeOut" }}>
+      <motion.div 
+        key={activeTab} 
+        initial={{ opacity: 0, filter: "blur(8px)" }} 
+        animate={{ opacity: 1, filter: "blur(0px)" }} 
+        exit={{ opacity: 0, filter: "blur(8px)" }} 
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
         {content}
       </motion.div>
     );
@@ -992,7 +952,6 @@ export default function App() {
       animate={{ '--primary': currentTheme.primary, '--accent': currentTheme.accent, '--ring': currentTheme.primary, '--background': currentTheme.background, '--theme-glow': currentTheme.glow, '--bg-from': currentTheme.bgFrom, '--bg-to': currentTheme.bgTo } as any}
       transition={{ duration: 1.2, ease: "easeInOut" }}
     >
-      <VideoTransition isVisible={isTransitioning} />
       <AnimatePresence>
         {showLetterbox && (
           <>

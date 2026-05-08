@@ -227,6 +227,18 @@
       will-change: stroke-dashoffset, opacity;
     }
 
+    .spark-animation-cyan {
+      animation: spark-travel-cyan 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      will-change: stroke-dashoffset, opacity;
+    }
+
+    @keyframes spark-travel-cyan {
+      0% { stroke-dashoffset: 100%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { stroke-dashoffset: 0; opacity: 0; }
+    }
+
     .pad-animation {
       animation: pad-pulse-orange 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
       will-change: transform, opacity;
